@@ -251,16 +251,29 @@ function autoFillLeftover(){
   });
   render();
 }
+function tryPlaceInPlate(p,pi){
+  let pl=plates[pi],y0=plateY(pi),g=gapMM;
+  if(pl.t!==p.t||pl.mat!==p.mat)return false;
+  let r0=minHRot(p.base),cands=[r0,(r0+90)%180];
+  let placed=PIECES.filter(q=>{if(q===p)return false;let l=locate(q);return l.plate===pi&&l.inside;}).map(q=>{let w=worldPts(q);return{w,bb:bbox(w)};});
+  for(let r of cands){let b=bbox(xform(p.base,0,0,r));
+    if(b.w>pl.L-2*g||b.h>pl.W-2*g)continue;
+    let step=Math.max(55,Math.min(pl.L,pl.W)/55);
+    for(let y=y0+g;y+b.h<=y0+pl.W-g;y+=step){
+      for(let x=g;x+b.w<=pl.L-g;x+=step){
+        let cx0=x,cx1=x+b.w,cy0=y,cy1=y+b.h,wp=null,ok=true;
+        for(let q of placed){
+          if(cx0>q.bb.x1+g||cx1<q.bb.x0-g||cy0>q.bb.y1+g||cy1<q.bb.y0-g)continue;
+          if(!wp)wp=xform(p.base,x-b.x0,y-b.y0,r);
+          if(polyGap(wp,q.w)<g){ok=false;break;}}
+        if(ok){p.rot=r;p.x=x-b.x0;p.y=y-b.y0;return true;}}}}
+  return false;}
 function autoPack(){layoutAll();
-  let cur=plates.map((pl,i)=>({x:gapMM+10,y:plateY(i)+gapMM+10,rowH:0}));
-  PIECES.slice().sort((a,b)=>bbox(b.base).h-bbox(a.base).h).forEach(p=>{let b=bbox(p.base),done=false;
-    for(let i=0;i<plates.length&&!done;i++){let pl=plates[i],c=cur[i];
-      if(pl.t!==p.t||pl.mat!==p.mat)continue;
-      if(b.w>pl.L-2*gapMM||b.h>pl.W-2*gapMM)continue;
-      if(c.x+b.w>pl.L-gapMM){c.x=gapMM+10;c.y+=c.rowH+gapMM+10;c.rowH=0;}
-      if(c.y+b.h>plateY(i)+pl.W-gapMM)continue;
-      p.x=c.x;p.y=c.y;p.rot=0;c.x+=b.w+gapMM+10;c.rowH=Math.max(c.rowH,b.h);done=true;}});
-  render();}
+  let order=PIECES.slice().sort((a,b)=>area(b.base)-area(a.base));  // 큰 것부터
+  let left=0;
+  order.forEach(p=>{let done=false;for(let i=0;i<plates.length&&!done;i++){if(tryPlaceInPlate(p,i))done=true;}if(!done)left++;});
+  sel=null;render();
+  if(left)document.getElementById('stMsg').textContent=`⚠ ${left}개 조각 미배치(공간 부족) — 판재 추가 또는 [자동 네스팅 → 맞춤 판재] 사용`;}
 document.getElementById('method').addEventListener('change',e=>{if(e.target.value!=='0'){document.getElementById('gap').value=e.target.value;gapMM=+e.target.value;render();}});
 document.getElementById('gap').addEventListener('input',e=>{gapMM=+e.target.value||0;document.getElementById('method').value='0';render();});
 layoutAll();render();
