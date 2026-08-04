@@ -60,6 +60,11 @@
     <button onclick="resetAll()">조각 초기화</button>
     <button onclick="autoPack()">자동 정렬(참고)</button>
     <button onclick="autoFillLeftover()">자투리 소형부품 자동배치</button>
+    <div class="sep"></div>
+    <div class="fld"><label>운반 max 가로</label><input id="maxL" type="number" value="12000" style="width:82px"></div>
+    <div class="fld"><label>운반 max 세로</label><input id="maxW" type="number" value="3050" style="width:82px"></div>
+    <div class="fld"><label>스냅(mm)</label><input id="snap" type="number" value="100" style="width:62px"></div>
+    <button class="primary" onclick="autoNestCustom()">⚙ 자동 네스팅 → 맞춤 판재</button>
   </div>
   <div class="platebar" id="platebar"></div>
   <div class="status">
@@ -206,6 +211,31 @@ function returnSel(){if(!sel)return;sel.x=-1e6;sel.rot=0;layoutUnplaced();sel=nu
 function addPlate(){let L=+document.getElementById('npL').value||3000,W=+document.getElementById('npW').value||2000,t=+document.getElementById('npT').value||10,mat=document.getElementById('npMat').value;plates.push({L,W,t,mat});render();}
 function delPlate(i){plates.splice(i,1);layoutUnplaced();render();}
 function resetAll(){layoutAll();sel=null;render();showSel();}
+function minHRot(base){let best=0,bh=1e18;for(let d=0;d<180;d+=5){let p=xform(base,0,0,d);let h=Math.max(...p.map(a=>a[1]))-Math.min(...p.map(a=>a[1]));if(h<bh){bh=h;best=d;}}return best;}
+function autoNestCustom(){
+  let maxL=+document.getElementById('maxL').value||12000, maxW=+document.getElementById('maxW').value||3050;
+  let snap=+document.getElementById('snap').value||0, g=gapMM, over=0;
+  let groups={};PIECES.forEach(p=>{let k=p.t+'|'+p.mat;(groups[k]=groups[k]||[]).push(p);});
+  let built=[];
+  Object.values(groups).forEach(arr=>{let t=arr[0].t,mat=arr[0].mat;
+    // rotate each to min height, cache bbox
+    arr.forEach(p=>{p._r=minHRot(p.base);p._b=bbox(xform(p.base,0,0,p._r));});
+    let items=arr.slice().sort((a,b)=>b._b.h-a._b.h);
+    let cur={t,mat,x:g,y:g,rowH:0,usedL:0,usedW:0,items:[]};
+    let flush=()=>{if(cur.items.length)built.push(cur);cur={t,mat,x:g,y:g,rowH:0,usedL:0,usedW:0,items:[]};};
+    items.forEach(p=>{let b=p._b;
+      if(b.w>maxL-2*g||b.h>maxW-2*g){over++;flush();cur.items.push({p,nx:g,ny:g,r:p._r});cur.usedL=b.w+2*g;cur.usedW=b.h+2*g;flush();return;}
+      if(cur.x+b.w>maxL-g){cur.x=g;cur.y+=cur.rowH+g;cur.rowH=0;}
+      if(cur.y+b.h>maxW-g)flush();
+      cur.items.push({p,nx:cur.x,ny:cur.y,r:p._r});
+      cur.x+=b.w+g;cur.rowH=Math.max(cur.rowH,b.h);cur.usedL=Math.max(cur.usedL,cur.x);cur.usedW=Math.max(cur.usedW,cur.y+cur.rowH);});
+    flush();});
+  let snapUp=v=>snap>0?Math.ceil(v/snap)*snap:Math.ceil(v);
+  plates=built.map(bp=>({L:Math.min(maxL,snapUp(bp.usedL+g)),W:Math.min(maxW,snapUp(bp.usedW+g)),t:bp.t,mat:bp.mat}));
+  built.forEach((bp,idx)=>{let y0=plateY(idx);bp.items.forEach(it=>{let bb=bbox(xform(it.p.base,0,0,it.r));it.p.rot=it.r;it.p.x=it.nx-bb.x0;it.p.y=y0+it.ny-bb.y0;});});
+  sel=null;render();
+  document.getElementById('stMsg').textContent=`맞춤 판재 ${plates.length}장 산출 (운반 ${maxL}×${maxW} 이내)`+(over?` · ⚠ ${over}개 조각 운반한계 초과→추가분할 필요`:'');
+}
 function autoFillLeftover(){
   plates.forEach((pl,pi)=>{let y0=plateY(pi);
     let placed=PIECES.filter(p=>{let l=locate(p);return l.plate===pi&&l.inside&&p.t===pl.t&&p.mat===pl.mat;});
