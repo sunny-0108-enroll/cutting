@@ -212,13 +212,10 @@ function addPlate(){let L=+document.getElementById('npL').value||3000,W=+documen
 function delPlate(i){plates.splice(i,1);layoutUnplaced();render();}
 function resetAll(){layoutAll();sel=null;render();showSel();}
 function minHRot(base){let best=0,bh=1e18;for(let d=0;d<180;d+=5){let p=xform(base,0,0,d);let h=Math.max(...p.map(a=>a[1]))-Math.min(...p.map(a=>a[1]));if(h<bh){bh=h;best=d;}}return best;}
-function autoNestCustom(){
-  let maxL=+document.getElementById('maxL').value||12000, maxW=+document.getElementById('maxW').value||3050;
-  let snap=+document.getElementById('snap').value||0, g=gapMM, over=0;
-  let groups={};PIECES.forEach(p=>{let k=p.t+'|'+p.mat;(groups[k]=groups[k]||[]).push(p);});
-  let built=[];
+function packGroups(list,maxL,maxW,snap,g){
+  let groups={};list.forEach(p=>{let k=p.t+'|'+p.mat;(groups[k]=groups[k]||[]).push(p);});
+  let built=[],over=0,snapUp=v=>snap>0?Math.ceil(v/snap)*snap:Math.ceil(v);
   Object.values(groups).forEach(arr=>{let t=arr[0].t,mat=arr[0].mat;
-    // rotate each to min height, cache bbox
     arr.forEach(p=>{p._r=minHRot(p.base);p._b=bbox(xform(p.base,0,0,p._r));});
     let items=arr.slice().sort((a,b)=>b._b.h-a._b.h);
     let cur={t,mat,x:g,y:g,rowH:0,usedL:0,usedW:0,items:[]};
@@ -230,11 +227,20 @@ function autoNestCustom(){
       cur.items.push({p,nx:cur.x,ny:cur.y,r:p._r});
       cur.x+=b.w+g;cur.rowH=Math.max(cur.rowH,b.h);cur.usedL=Math.max(cur.usedL,cur.x);cur.usedW=Math.max(cur.usedW,cur.y+cur.rowH);});
     flush();});
-  let snapUp=v=>snap>0?Math.ceil(v/snap)*snap:Math.ceil(v);
-  plates=built.map(bp=>({L:Math.min(maxL,snapUp(bp.usedL+g)),W:Math.min(maxW,snapUp(bp.usedW+g)),t:bp.t,mat:bp.mat}));
-  built.forEach((bp,idx)=>{let y0=plateY(idx);bp.items.forEach(it=>{let bb=bbox(xform(it.p.base,0,0,it.r));it.p.rot=it.r;it.p.x=it.nx-bb.x0;it.p.y=y0+it.ny-bb.y0;});});
+  built.forEach(bp=>{bp.L=Math.min(maxL,snapUp(bp.usedL+g));bp.W=Math.min(maxW,snapUp(bp.usedW+g));});
+  return {built,over};
+}
+function placeBuilt(built,startIdx){
+  built.forEach((bp,i)=>{let y0=plateY(startIdx+i);bp.items.forEach(it=>{let bb=bbox(xform(it.p.base,0,0,it.r));it.p.rot=it.r;it.p.x=it.nx-bb.x0;it.p.y=y0+it.ny-bb.y0;});});
+}
+function nestOpts(){return {maxL:+document.getElementById('maxL').value||12000,maxW:+document.getElementById('maxW').value||3050,snap:+document.getElementById('snap').value||0};}
+function autoNestCustom(){
+  let o=nestOpts();
+  let {built,over}=packGroups(PIECES.slice(),o.maxL,o.maxW,o.snap,gapMM);
+  plates=built.map(bp=>({L:bp.L,W:bp.W,t:bp.t,mat:bp.mat}));
+  placeBuilt(built,0);
   sel=null;render();
-  document.getElementById('stMsg').textContent=`맞춤 판재 ${plates.length}장 산출 (운반 ${maxL}×${maxW} 이내)`+(over?` · ⚠ ${over}개 조각 운반한계 초과→추가분할 필요`:'');
+  document.getElementById('stMsg').textContent=`맞춤 판재 ${plates.length}장 산출 (운반 ${o.maxL}×${o.maxW} 이내)`+(over?` · ⚠ ${over}개 조각 운반한계 초과→추가분할 필요`:'');
 }
 function autoFillLeftover(){
   plates.forEach((pl,pi)=>{let y0=plateY(pi);
@@ -254,11 +260,11 @@ function autoFillLeftover(){
 function tryPlaceInPlate(p,pi){
   let pl=plates[pi],y0=plateY(pi),g=gapMM;
   if(pl.t!==p.t||pl.mat!==p.mat)return false;
-  let r0=minHRot(p.base),cands=[r0,(r0+90)%180];
+  let r0=minHRot(p.base),cset=[r0,(r0+90)%360,0,90,180,270,(r0+180)%360,(r0+270)%360],cands=[...new Set(cset)];
   let placed=PIECES.filter(q=>{if(q===p)return false;let l=locate(q);return l.plate===pi&&l.inside;}).map(q=>{let w=worldPts(q);return{w,bb:bbox(w)};});
   for(let r of cands){let b=bbox(xform(p.base,0,0,r));
     if(b.w>pl.L-2*g||b.h>pl.W-2*g)continue;
-    let step=Math.max(55,Math.min(pl.L,pl.W)/55);
+    let step=Math.max(40,Math.min(pl.L,pl.W)/80);
     for(let y=y0+g;y+b.h<=y0+pl.W-g;y+=step){
       for(let x=g;x+b.w<=pl.L-g;x+=step){
         let cx0=x,cx1=x+b.w,cy0=y,cy1=y+b.h,wp=null,ok=true;
@@ -270,10 +276,18 @@ function tryPlaceInPlate(p,pi){
   return false;}
 function autoPack(){layoutAll();
   let order=PIECES.slice().sort((a,b)=>area(b.base)-area(a.base));  // 큰 것부터
-  let left=0;
-  order.forEach(p=>{let done=false;for(let i=0;i<plates.length&&!done;i++){if(tryPlaceInPlate(p,i))done=true;}if(!done)left++;});
+  let leftPieces=[];
+  order.forEach(p=>{let done=false;for(let i=0;i<plates.length&&!done;i++){if(tryPlaceInPlate(p,i))done=true;}if(!done)leftPieces.push(p);});
+  let added=0;
+  if(leftPieces.length){ // 남은 조각은 두께·재질별 맞춤 판재를 자동 추가해 전부 배치
+    let o=nestOpts();
+    let {built}=packGroups(leftPieces,o.maxL,o.maxW,o.snap,gapMM);
+    let start=plates.length;
+    built.forEach(bp=>plates.push({L:bp.L,W:bp.W,t:bp.t,mat:bp.mat}));
+    placeBuilt(built,start); added=built.length;
+  }
   sel=null;render();
-  if(left)document.getElementById('stMsg').textContent=`⚠ ${left}개 조각 미배치(공간 부족) — 판재 추가 또는 [자동 네스팅 → 맞춤 판재] 사용`;}
+  document.getElementById('stMsg').textContent=added?`고정 판재 배치 + 남은 조각용 맞춤 판재 ${added}장 자동 추가 → 전체 배치 완료`:'전체 배치 완료';}
 document.getElementById('method').addEventListener('change',e=>{if(e.target.value!=='0'){document.getElementById('gap').value=e.target.value;gapMM=+e.target.value;render();}});
 document.getElementById('gap').addEventListener('input',e=>{gapMM=+e.target.value||0;document.getElementById('method').value='0';render();});
 layoutAll();render();
