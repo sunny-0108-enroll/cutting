@@ -15,16 +15,20 @@ header.app .tag{font-size:11px;color:var(--muted);background:#eef2f8;border:1px 
 header.app .sp{flex:1}
 header.app .reg{font-size:12px;color:var(--muted)}
 .appbody{flex:1;display:flex;min-height:0;height:calc(100vh - 44px)}
-nav.side{width:232px;flex:none;height:100%;background:var(--nav);color:var(--navink);display:flex;flex-direction:column;overflow-y:auto}
-nav .grp{font-size:11px;letter-spacing:.06em;color:#8b98a8;padding:12px 14px 4px;text-transform:uppercase}
-nav a{display:flex;align-items:center;gap:8px;padding:8px 14px;color:var(--navink);text-decoration:none;cursor:pointer;border-left:3px solid transparent;font-size:12.5px}
+.navtg{border:1px solid var(--line);background:#fff;border-radius:5px;padding:1px 7px;font-size:12px;cursor:pointer;color:var(--muted)}
+nav.side{width:188px;flex:none;height:100%;transition:width .15s;background:var(--nav);color:var(--navink);display:flex;flex-direction:column;overflow-y:auto}
+nav .grp{font-size:10.5px;letter-spacing:.06em;color:#8b98a8;padding:10px 12px 3px;text-transform:uppercase;display:flex;align-items:center;justify-content:space-between}
+nav .grp .tg{border:none;background:none;color:#8b98a8;cursor:pointer;font-size:12px;padding:0}
+nav.mini{width:48px}nav.mini a span:not(.n){display:none}nav.mini .grp{padding:10px 0 3px;justify-content:center}nav.mini .grp .lbl,nav.mini details{display:none}nav.mini a{justify-content:center;padding:8px 0}
+nav details summary{list-style:none;cursor:pointer;padding:6px 12px;font-size:11.5px;color:#aab6c4;display:flex;justify-content:space-between}nav details summary::-webkit-details-marker{display:none}nav details summary:hover{background:#2a3545}nav details[open] summary{color:#fff}
+nav a{display:flex;align-items:center;gap:7px;padding:7px 12px;color:var(--navink);text-decoration:none;cursor:pointer;border-left:3px solid transparent;font-size:12px;white-space:nowrap}
 nav a:hover{background:#2a3545}
 nav a.on{background:#2f3d50;border-left-color:#5b9cff;color:#fff}
-nav a .n{display:inline-flex;width:20px;height:20px;border-radius:50%;background:#34435a;align-items:center;justify-content:center;font-size:11px;flex:none}
+nav a .n{display:inline-flex;width:19px;height:19px;border-radius:50%;background:#34435a;align-items:center;justify-content:center;font-size:10.5px;flex:none}
 nav a.on .n{background:#5b9cff;color:#fff}
 nav a .st{margin-left:auto;font-size:10.5px;color:#8b98a8}
 nav a.done .n{background:var(--good);color:#fff}
-nav a.sub{padding-left:28px;font-size:12px}
+nav a.sub{padding:5px 12px 5px 24px;font-size:11.5px}
 main{flex:1;min-width:0;display:flex;flex-direction:column;overflow:hidden;height:100%}
 section.panel{display:none;flex:1;min-height:0;overflow:auto;padding:16px 20px}
 section.panel.on{display:block}
@@ -88,7 +92,7 @@ table.t tr.plate td{background:#f7fbf8}
 .ctrls label{color:var(--muted)}
 .ctrls input[type=number]{width:62px}
 .wsbody{flex:1;display:flex;min-height:0}
-.tray{width:236px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
+.tray{width:212px;flex:none;background:var(--panel);border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0}
 .tray .ph{padding:9px 11px;border-bottom:1px solid var(--line)}
 .tray h3{margin:0 0 4px;font-size:13px}
 .tray .pmeta{font-size:11px;color:var(--muted);line-height:1.5}
@@ -117,7 +121,7 @@ table.t tr.plate td{background:#f7fbf8}
 .prow .k{display:inline-block;font-size:9.5px;border-radius:3px;padding:0 4px;margin-left:4px;color:#fff}
 .k.std{background:#2fa36b}.k.coil{background:#5b9cff}.k.custom{background:#d9a400}.k.manual{background:#8a6fd0}
 .prow .x{border:none;background:none;color:var(--muted);cursor:pointer;font-size:13px}.prow .x:hover{color:var(--bad)}
-.cmp2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.cmp2{display:grid;grid-template-columns:1fr 1fr;gap:14px}.cmp2.three{grid-template-columns:1fr 1fr 1fr}
 .cmp2 .col{border:1px solid var(--line);border-radius:8px;background:#fff;padding:10px 12px;min-width:0}
 .cmp2 .col h4{margin:0 0 6px;font-size:13px}
 .cmp2 svg{width:100%;height:auto;background:#eceff3;border-radius:6px}
@@ -152,19 +156,19 @@ table.t tr.plate td{background:#f7fbf8}
 </head>
 <body>
 <header class="app">
-  <b>커팅플랜 워크플로우</b><span class="tag">도면 등록 → BOM → 전개 → 네스팅 → 표준/커스텀 비교</span>
+  <button class="navtg" id="navTg" title="메뉴 접기/펴기">☰</button><b>커팅플랜 워크플로우</b><span class="tag">도면 등록 → BOM → 전개 → 네스팅 → 표준/커스텀 비교</span>
   <span class="sp"></span><span class="reg" id="hdReg">등록 도면 0장</span>
 </header>
 <div class="appbody">
 <nav class="side">
-  <div class="grp">워크플로우</div>
-  <a data-step="1" class="on"><span class="n">1</span>입력 (도면·수동·보완)<span class="st" id="st1"></span></a>
-  <a data-step="2"><span class="n">2</span>BOM 추출 · 플레이트 항목<span class="st" id="st2"></span></a>
-  <a data-step="3"><span class="n">3</span>재질 · 두께 그룹<span class="st" id="st3"></span></a>
-  <a data-step="4"><span class="n">4</span>치수 확정 · 전개도형<span class="st" id="st4"></span></a>
-  <a data-step="5"><span class="n">5</span>네스팅 (자동/수동)<span class="st" id="st5"></span></a>
-  <a data-step="6"><span class="n">6</span>표준 vs 커스텀 비교<span class="st" id="st6"></span></a>
-  <div class="grp">참고자료 (이전 분석)</div>
+  <div class="grp"><span class="lbl">워크플로우</span></div>
+  <a data-step="1" class="on" title="입력 (도면·수동·보완)"><span class="n">1</span><span>입력</span><span class="st" id="st1"></span></a>
+  <a data-step="2" title="BOM 추출 · 플레이트 항목"><span class="n">2</span><span>BOM 추출</span><span class="st" id="st2"></span></a>
+  <a data-step="3" title="재질 · 두께 그룹"><span class="n">3</span><span>재질·두께 그룹</span><span class="st" id="st3"></span></a>
+  <a data-step="4" title="치수 확정 · 전개도형"><span class="n">4</span><span>치수·전개도형</span><span class="st" id="st4"></span></a>
+  <a data-step="5" title="네스팅 (자동/수동)"><span class="n">5</span><span>네스팅</span><span class="st" id="st5"></span></a>
+  <a data-step="6" title="표준 vs 커스텀 비교"><span class="n">6</span><span>판재 비교</span><span class="st" id="st6"></span></a>
+  <div class="grp"><span class="lbl">참고자료</span></div>
   <div id="refnav"></div>
 </nav>
 <main>
@@ -230,7 +234,7 @@ table.t tr.plate td{background:#f7fbf8}
 <section class="panel ws" id="p5">
   <div class="ctrls">
     <div class="grp"><label>판재</label>
-      <select id="mode"><option value="std">표준 판재 (시장 규격)</option><option value="custom">커스텀 주문 판재</option></select></div>
+      <select id="mode"><option value="std">표준 판재 (시장 규격)</option><option value="custom">커스텀 주문 판재</option><option value="mix">혼합 최적 (표준+커스텀)</option></select></div>
     <div class="grp"><label>절단</label>
       <select id="method"><option value="15" selected>플라즈마 · 여유 15</option><option value="20">가스 · 여유 20</option><option value="8">레이저 · 여유 8</option><option value="10">워터젯 · 여유 10</option><option value="c">직접입력</option></select>
       <input type="number" id="gap" value="15" min="0" step="1" style="width:56px"><span>mm</span>
@@ -262,7 +266,7 @@ table.t tr.plate td{background:#f7fbf8}
 <!-- STEP 6 -->
 <section class="panel" id="p6">
   <h2 class="pt">⑥ 표준 판재 vs 커스텀 주문 판재 비교</h2>
-  <p class="pd">같은 조각·같은 여유 설정으로 두 방식을 자동 배치하고 판재 수·면적·중량·사용률을 비교합니다. 표준 규격으로 올릴 수 없는 조각(폭/길이 초과)은 표준 방식에서도 커스텀 판재로 자동 보완됩니다.</p>
+  <p class="pd">같은 조각·같은 여유 설정으로 표준 / 커스텀 / 혼합(그룹별로 사용률이 높은 쪽 선택) 세 방식을 자동 배치하고 판재 수·면적·중량·사용률을 비교합니다. 표준 규격으로 올릴 수 없는 조각(폭/길이 초과)은 표준 방식에서도 커스텀 판재로 자동 보완됩니다.</p>
   <div class="bar"><button id="runCmp" class="pri">비교 실행</button><span class="note" id="cmpMsg"></span></div>
   <div class="tabs"><button class="tabbtn on" data-tab6="cmpVis">네스팅 비교 보기</button><button class="tabbtn" data-tab6="cmpTable">상세 목록</button></div>
   <div id="cmpVis" class="tabpane on"></div>
@@ -548,20 +552,32 @@ function simulate(pieces,mode){
   const gap=gapMM,edge=edgeMM,maxL=+document.getElementById('maxL').value||12000;
   const maxWc={CS:+document.getElementById('maxWcs').value||3500,SS:+document.getElementById('maxWss').value||3280};
   const g={};for(const p of pieces){(g[p.mat+'|'+p.t]=g[p.mat+'|'+p.t]||[]).push(p);}
-  const outPlates=[],placeMap={},unplaced=[],notes=[];
+  const outPlates=[],placeMap={},unplaced=[],notes=[],choice={};
+  const areaOf=r=>r.plates.reduce((s,p)=>s+p.L*p.W,0);
   for(const k in g){const list=g[k];const{mat,t}=list[0];const cls=clsOf(mat);const maxW=maxWc[cls];
-    const push=(r,kind,label)=>{const base=outPlates.length;r.plates.forEach(p=>outPlates.push({L:p.L,W:p.W,t,mat,cls,kind,label}));for(const u in r.placeMap){placeMap[u]={...r.placeMap[u],pi:r.placeMap[u].pi+base};}};
-    let rest=list;
-    if(mode==='std'){const o=stdOptions(cls,t);let best=null;
-      for(const[W,L]of o.sizes){const r=simFixed(list,L,W,gap,edge);const A=r.plates.reduce((s,p)=>s+p.L*p.W,0);const sc=r.over.length*1e12+A;if(!best||sc<best.sc)best={...r,sc,kind:'std',label:`${W}×${L}`};}
-      for(const W of o.coil){const r=simShelf(list,W,maxL,gap,edge);const A=r.plates.reduce((s,p)=>s+p.L*p.W,0);const sc=r.over.length*1e12+A;if(!best||sc<best.sc)best={...r,sc,kind:'coil',label:`COIL ${W}폭`};}
-      if(best){push(best,best.kind,best.label);rest=best.over;if(rest.length)notes.push(`${mat} t${t}: ${rest.length}개 조각이 표준 규격(${best.label})을 초과 → 커스텀 보완`);}
-      else{notes.push(`${mat} t${t}: 표준 규격 없음(${o.note}) → 커스텀 주문`);}}
-    if(rest.length){const r=simCustom(rest,cls,gap,edge,maxL,maxW);push(r,'custom','주문');r.over.forEach(it=>unplaced.push(it.uid));if(r.over.length)notes.push(`${mat} t${t}: ${r.over.length}개 조각이 주문 max(${maxW}×${maxL})를 초과`);}}
-  // stats
+    // (1) 표준 경로: 표준/코일 중 최소면적 → 초과 조각은 커스텀 보완
+    const stdRun=()=>{const o=stdOptions(cls,t);let best=null;
+      for(const[W,L]of o.sizes){const r=simFixed(list,L,W,gap,edge);const sc=r.over.length*1e12+areaOf(r);if(!best||sc<best.sc)best={...r,sc,kind:'std',label:`${W}×${L}`};}
+      for(const W of o.coil){const r=simShelf(list,W,maxL,gap,edge);const sc=r.over.length*1e12+areaOf(r);if(!best||sc<best.sc)best={...r,sc,kind:'coil',label:`COIL ${W}폭`};}
+      const segs=[],nt=[];let rest=list;
+      if(best){segs.push({r:best,kind:best.kind,label:best.label});rest=best.over;if(rest.length)nt.push(`${mat} t${t}: ${rest.length}개 조각이 표준 규격(${best.label})을 초과 → 커스텀 보완`);}
+      else nt.push(`${mat} t${t}: 표준 규격 없음(${o.note}) → 커스텀 주문`);
+      let over=[];if(rest.length){const r=simCustom(rest,cls,gap,edge,maxL,maxW);segs.push({r,kind:'custom',label:'주문'});over=r.over;}
+      return{segs,notes:nt,over,area:segs.reduce((s,x)=>s+areaOf(x.r),0),n:segs.reduce((s,x)=>s+x.r.plates.length,0)};};
+    // (2) 커스텀 경로
+    const cusRun=()=>{const r=simCustom(list,cls,gap,edge,maxL,maxW);return{segs:[{r,kind:'custom',label:'주문'}],notes:[],over:r.over,area:areaOf(r),n:r.plates.length};};
+    let pick,how;
+    if(mode==='std'){pick=stdRun();how='std';}
+    else if(mode==='custom'){pick=cusRun();how='custom';}
+    else{const a=stdRun(),b=cusRun();const ua=a.over.length*1e12+a.area,ub=b.over.length*1e12+b.area; // 최적 사용률 = 최소 판재 면적(조각 면적 동일), 동률이면 적은 장수
+      if(ub<ua||(ub===ua&&b.n<a.n)){pick=b;how='custom';}else{pick=a;how='std';}
+      choice[k]=how;}
+    for(const s of pick.segs){const base=outPlates.length;s.r.plates.forEach(p=>outPlates.push({L:p.L,W:p.W,t,mat,cls,kind:s.kind,label:s.label}));for(const u in s.r.placeMap){placeMap[u]={...s.r.placeMap[u],pi:s.r.placeMap[u].pi+base};}}
+    notes.push(...pick.notes);pick.over.forEach(it=>unplaced.push(it.uid));if(pick.over.length)notes.push(`${mat} t${t}: ${pick.over.length}개 조각이 주문 max(${maxW}×${maxL})를 초과`);
+    if(mode==='mix')notes.push(`${mat} t${t}: ${how==='std'?'표준/코일':'커스텀'} 선택`);}
   let plateA=0,wt=0,pieceA=0;for(const p of outPlates){plateA+=p.L*p.W;wt+=p.L*p.W*p.t*densityOf(p.mat)*1e-6;}
   for(const p of pieces)if(placeMap[p.uid])pieceA+=area(p.base);
-  return{plates:outPlates,placeMap,unplaced,notes,stats:{n:outPlates.length,area:plateA,kg:wt,util:plateA?pieceA/plateA:0,std:outPlates.filter(p=>p.kind==='std').length,coil:outPlates.filter(p=>p.kind==='coil').length,custom:outPlates.filter(p=>p.kind==='custom').length}};}
+  return{plates:outPlates,placeMap,unplaced,notes,choice,stats:{n:outPlates.length,area:plateA,kg:wt,util:plateA?pieceA/plateA:0,std:outPlates.filter(p=>p.kind==='std').length,coil:outPlates.filter(p=>p.kind==='coil').length,custom:outPlates.filter(p=>p.kind==='custom').length}};}
 function applySim(res){viewPlate=-1;plates=res.plates.map(p=>({...p}));for(const p of PIECES){const m=res.placeMap[p.uid];if(m){p.inTray=false;p.pi=m.pi;p.x=m.x;p.y=m.y;p.rot=m.rot;}else{p.inTray=true;p.pi=-1;}}sel=null;render();
   document.getElementById('stMsg').textContent=(res.notes.length?res.notes.join(' · '):'모든 조각 배치 완료')+(res.unplaced.length?` · 미배치 ${res.unplaced.length}`:'');}
 
@@ -609,7 +625,7 @@ window.addEventListener('keydown',e=>{if(e.target.tagName==='INPUT')return;if(e.
 window.addEventListener('resize',()=>{if(document.getElementById('p5').classList.contains('on'))render();});
 
 /* ---------- STEP 5 entry ---------- */
-function enterStep5(){wsMode='wf';refKey=null;document.getElementById('cmpPanel').style.display='none';svg.style.display='block';
+function enterStep5(){wsMode='wf';refKey=null;document.getElementById('cmpPanel').style.display='none';svg.style.display='block';document.querySelector('.plist').style.display='flex';
   if(dirty)buildPieces();viewPlate=-1;
   const gs=groups();document.getElementById('trayTitle').textContent='조각 (전개도형)';
   document.getElementById('projMeta').innerHTML=`등록 도면 ${reg.size}장 · 조각 <b>${PIECES.length}</b>개 · 그룹 ${gs.length}<br>${gs.map(g=>`<span class="sw" style="background:${matColor(g.mat)}"></span>${g.mat} t${g.t} (${g.pcs})`).join(' · ')}`;
@@ -621,9 +637,9 @@ document.querySelectorAll('.tabbtn[data-tab6]').forEach(b=>b.onclick=()=>{docume
 document.getElementById('runCmp').onclick=()=>{
   if(dirty)buildPieces();if(!PIECES.length){document.getElementById('cmpMsg').textContent='등록된 플레이트 조각이 없습니다';return;}
   document.getElementById('cmpMsg').textContent='계산 중…';setTimeout(()=>{
-    const A=simulate(PIECES,'std'),B=simulate(PIECES,'custom');window._cmp={A,B};
+    const A=simulate(PIECES,'std'),B=simulate(PIECES,'custom'),C=simulate(PIECES,'mix');window._cmp={A,B,C};
     const gstat=(res)=>{const g={};res.plates.forEach(p=>{const k=p.mat+'|'+p.t;(g[k]=g[k]||{mat:p.mat,t:p.t,cls:p.cls,n:0,area:0,kg:0,kinds:{}});g[k].n++;g[k].area+=p.L*p.W;g[k].kg+=p.L*p.W*p.t*densityOf(p.mat)*1e-6;g[k].kinds[p.label||p.kind]=(g[k].kinds[p.label||p.kind]||0)+1;});return g;};
-    const ga=gstat(A),gb=gstat(B);const keys=[...new Set([...Object.keys(ga),...Object.keys(gb)])];
+    const ga=gstat(A),gb=gstat(B),gc=gstat(C);const keys=[...new Set([...Object.keys(ga),...Object.keys(gb),...Object.keys(gc)])];
     const pa=(k)=>{const g=PIECES.filter(p=>p.mat+'|'+p.t===k);return g.reduce((s,p)=>s+area(p.base),0);};
     const miniSVG=(res)=>{const S=0.028;const pad=6;let y=0;const rows=[];for(const p of res.plates){rows.push({...p,y});y+=p.W*S+22;}
       const W=Math.max(...res.plates.map(p=>p.L*S),300)+pad*2,H=y+pad;let g='';
@@ -631,20 +647,25 @@ document.getElementById('runCmp').onclick=()=>{
       for(const pc of PIECES){const m=res.placeMap[pc.uid];if(!m)continue;const p=rows[m.pi];const poly=translate(rotNorm(pc.base,m.rot),m.x,m.y);g+=`<polygon points="${poly.map(([X,Y])=>`${(pad+X*S).toFixed(1)},${(p.y+16+Y*S).toFixed(1)}`).join(' ')}" fill="${pc.color}" fill-opacity=".85" stroke="#33414f" stroke-width=".5"/>`;}
       return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMinYMin meet">${g}</svg>`;};
     const colHtml=(title,res,cls)=>`<div class="col"><h4>${title}</h4><div class="cards" style="margin:4px 0 8px"><div class="card"><div class="k">판재</div><b>${res.stats.n}장</b></div><div class="card"><div class="k">중량</div><b>${fmtKg(res.stats.kg)}</b></div><div class="card"><div class="k">사용률</div><b>${(res.stats.util*100).toFixed(1)}%</b></div><div class="card"><div class="k">구성</div><b style="font-size:12px">표준 ${res.stats.std} · 코일 ${res.stats.coil} · 커스텀 ${res.stats.custom}</b></div></div><button class="sm pri" id="apply${cls}">이 결과를 네스팅 화면에 적용</button>${res.notes.length?`<div class="pl">${res.notes.join('<br>')}</div>`:''}${miniSVG(res)}</div>`;
-    document.getElementById('cmpVis').innerHTML=`<div class="cards"><div class="card"><div class="k">중량 차 (커스텀 − 표준)</div><b class="${B.stats.kg<A.stats.kg?'good':'badc'}">${(B.stats.kg-A.stats.kg<0?'−':'+')+fmtKg(Math.abs(B.stats.kg-A.stats.kg))}</b><div class="k">${((B.stats.kg/A.stats.kg-1)*100).toFixed(1)}% · 장수 ${A.stats.n} → ${B.stats.n}</div></div></div><div class="cmp2">${colHtml('표준 판재 (시장 규격 + 코일)',A,'A2')}${colHtml('커스텀 주문 판재',B,'B2')}</div>`;
+    const best=[['표준',A],['커스텀',B],['혼합',C]].sort((x,y)=>(x[1].stats.area-y[1].stats.area)||(x[1].stats.n-y[1].stats.n))[0];
+    const nMix=Object.values(C.choice||{});const mixTxt=`그룹별 선택: 표준/코일 ${nMix.filter(x=>x==='std').length} · 커스텀 ${nMix.filter(x=>x==='custom').length}`;
+    document.getElementById('cmpVis').innerHTML=`<div class="cards"><div class="card"><div class="k">최적 사용률</div><b class="good">${best[0]} ${(best[1].stats.util*100).toFixed(1)}%</b><div class="k">판재 ${best[1].stats.n}장 · ${fmtKg(best[1].stats.kg)}</div></div><div class="card"><div class="k">중량: 표준 → 커스텀 → 혼합</div><b>${fmtKg(A.stats.kg)} → ${fmtKg(B.stats.kg)} → ${fmtKg(C.stats.kg)}</b><div class="k">장수 ${A.stats.n} → ${B.stats.n} → ${C.stats.n}</div></div><div class="card"><div class="k">혼합 최적 구성</div><b style="font-size:12px">${mixTxt}</b><div class="k">그룹(재질·두께)마다 표준/코일 vs 커스텀 중 판재 면적이 작은 쪽</div></div></div><div class="cmp2 three">${colHtml('표준 판재 (시장 규격 + 코일)',A,'A2')}${colHtml('커스텀 주문 판재',B,'B2')}${colHtml('혼합 최적 (그룹별 선택)',C,'C2')}</div>`;
     document.getElementById('applyA2').onclick=()=>{document.getElementById('mode').value='std';goStep(5);applySim(A);};
     document.getElementById('applyB2').onclick=()=>{document.getElementById('mode').value='custom';goStep(5);applySim(B);};
+    document.getElementById('applyC2').onclick=()=>{document.getElementById('mode').value='mix';goStep(5);applySim(C);};
     let h=`<div class="cards"><div class="card"><div class="k">표준 판재 방식</div><b>${A.stats.n}장</b> · ${fmtKg(A.stats.kg)} · 사용률 ${(A.stats.util*100).toFixed(1)}%<div class="k">표준 ${A.stats.std} · 코일 ${A.stats.coil} · 커스텀 보완 ${A.stats.custom}</div></div>
       <div class="card"><div class="k">커스텀 주문 방식</div><b>${B.stats.n}장</b> · ${fmtKg(B.stats.kg)} · 사용률 ${(B.stats.util*100).toFixed(1)}%<div class="k">주문 max ${document.getElementById('maxWcs').value}/${document.getElementById('maxWss').value} × ${document.getElementById('maxL').value}</div></div></div>
-      <div class="bar"><button class="pri" id="applyA">표준 결과를 네스팅 화면에 적용</button><button class="pri" id="applyB">커스텀 결과를 적용</button></div>
-      <table class="t"><tr><th>그룹</th><th colspan="4">표준 판재</th><th colspan="4">커스텀 주문</th><th>차이(중량)</th></tr><tr><th>재질 / t</th><th>장수</th><th>구성</th><th>중량</th><th>사용률</th><th>장수</th><th>구성</th><th>중량</th><th>사용률</th><th></th></tr>`;
-    for(const k of keys){const a=ga[k],b=gb[k];const pA=pa(k);const row=(g)=>g?`<td class="num">${g.n}</td><td class="note">${Object.entries(g.kinds).map(([kk,v])=>kk+'×'+v).join(', ')}</td><td class="num">${fmtKg(g.kg)}</td><td class="num">${(pA/g.area*100).toFixed(0)}%</td>`:'<td colspan="4" class="note">-</td>';
-      const d=(b?b.kg:0)-(a?a.kg:0);h+=`<tr><td><span class="sw" style="background:${matColor((a||b).mat)}"></span>${(a||b).mat} t${(a||b).t}</td>${row(a)}${row(b)}<td class="num ${d<0?'good':(d>0?'badc':'')}">${d>=0?'+':'−'}${fmtKg(Math.abs(d))}</td></tr>`;}
+      <div class="card"><div class="k">혼합 최적</div><b>${C.stats.n}장</b> · ${fmtKg(C.stats.kg)} · 사용률 ${(C.stats.util*100).toFixed(1)}%<div class="k">${mixTxt}</div></div></div>
+      <div class="bar"><button class="pri" id="applyA">표준 결과 적용</button><button class="pri" id="applyB">커스텀 결과 적용</button><button class="pri" id="applyC">혼합 최적 적용</button></div>
+      <table class="t"><tr><th>그룹</th><th colspan="4">표준 판재</th><th colspan="4">커스텀 주문</th><th colspan="4">혼합 최적</th><th>혼합 선택</th></tr><tr><th>재질 / t</th><th>장수</th><th>구성</th><th>중량</th><th>사용률</th><th>장수</th><th>구성</th><th>중량</th><th>사용률</th><th>장수</th><th>구성</th><th>중량</th><th>사용률</th><th></th></tr>`;
+    for(const k of keys){const a=ga[k],b=gb[k],c=gc[k];const pA=pa(k);const row=(g,hl)=>g?`<td class="num ${hl?'good':''}">${g.n}</td><td class="note">${Object.entries(g.kinds).map(([kk,v])=>kk+'×'+v).join(', ')}</td><td class="num ${hl?'good':''}">${fmtKg(g.kg)}</td><td class="num ${hl?'good':''}">${(pA/g.area*100).toFixed(0)}%</td>`:'<td colspan="4" class="note">-</td>';
+      const ch=(C.choice||{})[k];h+=`<tr><td><span class="sw" style="background:${matColor((a||b||c).mat)}"></span>${(a||b||c).mat} t${(a||b||c).t}</td>${row(a,ch==='std')}${row(b,ch==='custom')}${row(c,true)}<td>${ch==='std'?'표준/코일':(ch==='custom'?'커스텀':'-')}</td></tr>`;}
     h+=`</table>`;if(A.notes.length)h+=`<div class="note">표준 방식 비고: ${A.notes.join(' · ')}</div>`;if(B.notes.length)h+=`<div class="note">커스텀 방식 비고: ${B.notes.join(' · ')}</div>`;
     h+=`<div class="note">※ 사용률 = 조각 면적 ÷ 판재 면적. 표준 방식에서 규격을 초과하는 조각(쉘 전개·경판 등)은 커스텀 판재로 자동 보완되며 '커스텀 보완' 수에 표시됩니다. COIL은 폭 고정·길이 주문으로 계산.</div>`;
     document.getElementById('cmpTable').innerHTML=h;document.getElementById('cmpMsg').textContent='';
     document.getElementById('applyA').onclick=()=>{document.getElementById('mode').value='std';goStep(5);applySim(A);};
     document.getElementById('applyB').onclick=()=>{document.getElementById('mode').value='custom';goStep(5);applySim(B);};
+    document.getElementById('applyC').onclick=()=>{document.getElementById('mode').value='mix';goStep(5);applySim(C);};
   },30);};
 
 /* =====================================================================
@@ -665,6 +686,7 @@ function loadRef(key){wsMode='ref';refKey=key;const proj=PROJECTS[key];
   document.getElementById('projMeta').innerHTML=proj.pieces.length?`조각 <b>${proj.pieces.length}</b>개 · 재질 ${mats.length}종<br>두께: ${ths.join(', ')}`+(proj.plates.length?`<br>판재 <b>${proj.plates.length}</b>장 로드됨`:''):'';
   const cb=document.getElementById('critBox');if(proj.criteria&&proj.criteria.length){cb.style.display='block';document.getElementById('critList').innerHTML=proj.criteria.map(c=>`<li>${c}</li>`).join('');}else cb.style.display='none';
   const cp=document.getElementById('cmpPanel');
+  const pl=document.querySelector('.plist');pl.style.display=(proj.summary||proj.compare)?'none':'flex';
   if(proj.summary){cp.style.display='block';svg.style.display='none';cp.innerHTML=proj.summary;document.getElementById('projMeta').innerHTML='두 프로젝트 정답지 추출·도면추론·비교 결과의 종합 요약';}
   else if(proj.compare){cp.style.display='block';svg.style.display='none';cp.innerHTML=renderCompare(key,proj.compare);document.getElementById('projMeta').innerHTML=`정답지 ${proj.compare.cp.pieces}조각 vs 도면추론 ${proj.compare.ai.pieces}조각`;}
   else{cp.style.display='none';svg.style.display='block';}
@@ -683,8 +705,10 @@ function goStep(s){document.querySelectorAll('nav a').forEach(a=>a.classList.tog
 document.querySelectorAll('nav a[data-step]').forEach(a=>a.onclick=()=>goStep(+a.dataset.step));
 // reference nav
 {const grp={};Object.keys(PROJECTS).forEach(k=>{const base=k==='SUMMARY'?'분석':k.replace(/-(AI|CMP)$/,'');(grp[base]=grp[base]||[]).push(k);});
- let h='';for(const g in grp){if(g!=='분석')h+=`<div class="grp" style="padding-top:6px">${g}</div>`;for(const k of grp[g])h+=`<a class="sub" data-ref="${k}">${PROJECTS[k].label.replace(g+' · ','')}</a>`;}
+ let h='';for(const g in grp){if(g==='분석'){for(const k of grp[g])h+=`<a class="sub" data-ref="${k}" title="${PROJECTS[k].label}"><span class="n">≡</span><span>${PROJECTS[k].label}</span></a>`;continue;}
+   h+=`<details><summary><span>${g}</span><span>▾</span></summary>`+grp[g].map(k=>`<a class="sub" data-ref="${k}" title="${PROJECTS[k].label}"><span>${PROJECTS[k].label.replace(g+' · ','').replace(' (CP 미사용)','').replace(' (정답지 vs 도면추론)','').replace('이전 버전 (수동 정의, 실제 PO 검증 5,486kg)','이전 버전')}</span></a>`).join('')+`</details>`;}
  document.getElementById('refnav').innerHTML=h;
+ document.getElementById('navTg').onclick=()=>document.querySelector('nav.side').classList.toggle('mini');
  document.querySelectorAll('nav a[data-ref]').forEach(a=>a.onclick=()=>{document.querySelectorAll('nav a').forEach(x=>x.classList.toggle('on',x===a));document.querySelectorAll('section.panel').forEach(p=>p.classList.remove('on'));document.getElementById('p5').classList.add('on');loadRef(a.dataset.ref);});}
 // initial: 모든 도면 미등록 상태에서 시작 → 사용자가 등록. (데모 편의를 위해 S-2120 기본 등록)
 CATALOG.drawings.filter(d=>d.project==='S-2120').forEach(d=>reg.add(d.id));
