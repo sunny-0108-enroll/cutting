@@ -55,6 +55,15 @@ table.t tr.plate td{background:#f7fbf8}
 .tabbtn{border:1px solid var(--line);border-bottom:none;border-radius:7px 7px 0 0;background:#eef2f8;padding:6px 14px}
 .tabbtn.on{background:#fff;font-weight:700;color:var(--accent)}
 .tabpane{display:none}.tabpane.on{display:block}
+.gridwrap{overflow:auto;max-height:60vh;border:1px solid var(--line);border-radius:6px;background:#fff}
+table.grid{border-collapse:collapse;font-size:11.5px;min-width:1500px}
+table.grid th{position:sticky;top:0;background:#eef2f8;border:1px solid var(--line);padding:4px 5px;font-weight:600;font-size:10.5px;line-height:1.25;text-align:center;z-index:2}
+table.grid td{border:1px solid #e6eaef;padding:0}
+table.grid td input,table.grid td select{width:100%;border:none;border-radius:0;padding:4px 5px;font-size:11.5px;background:transparent}
+table.grid td input:focus,table.grid td select:focus{outline:2px solid var(--accent);background:#f3f7ff}
+table.grid td input.req{background:#fffbea}
+table.grid td.st{padding:2px 6px;font-size:10.5px;color:var(--muted);white-space:nowrap}
+table.grid td.st.ok{color:var(--good)}table.grid td.st.ng{color:var(--bad)}
 .modal{position:fixed;inset:0;background:rgba(20,28,40,.45);z-index:50;align-items:center;justify-content:center}
 .mbox{background:#fff;border-radius:10px;width:min(940px,94vw);max-height:92vh;overflow:auto;padding:14px 18px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
 .mhd{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
@@ -174,9 +183,9 @@ table.t tr.plate td{background:#f7fbf8}
 <main>
 <!-- STEP 1 -->
 <section class="panel on" id="p1">
-  <h2 class="pt">① 입력 — 도면 분석 · 수동 등록 · 미확정 값 보완</h2>
-  <p class="pd">조각을 만드는 세 가지 경로입니다. Ⓐ 도면 파일을 올려 자동 분석하거나, Ⓑ 도형 타입을 선택하고 상세 사이즈·수량을 입력해 직접 생성하거나, Ⓒ 도면에서 인식은 됐지만 값이 불명확한 항목에 값을 입력해 확정합니다. 세 경로 모두 같은 조각 데이터로 합쳐져 ②~⑥을 거칩니다.</p>
-  <div class="tabs"><button class="tabbtn on" data-tab="tabA">Ⓐ 도면 파일 분석</button><button class="tabbtn" data-tab="tabB">Ⓑ 수동 등록 (도형 룩업)</button><button class="tabbtn" data-tab="tabC">Ⓒ 미확정 값 보완</button></div>
+  <h2 class="pt">① 입력 — 도면 분석 · 수동 등록 · 미확정 값 보완 · 워크북</h2>
+  <p class="pd">조각을 만드는 네 가지 경로입니다. Ⓐ 도면 파일을 올려 자동 분석, Ⓑ 도형 타입을 선택해 상세 사이즈·수량 입력, Ⓒ 도면에서 인식은 됐지만 값이 불명확한 항목에 값을 입력해 확정, Ⓓ 엑셀(ALL_PLATE)처럼 한 화면에서 여러 행을 빠르게 입력·붙여넣기·xlsx 불러오기. 네 경로 모두 같은 조각 데이터로 합쳐져 ②~⑥을 거칩니다.</p>
+  <div class="tabs"><button class="tabbtn on" data-tab="tabA">Ⓐ 도면 파일 분석</button><button class="tabbtn" data-tab="tabB">Ⓑ 수동 등록 (도형 룩업)</button><button class="tabbtn" data-tab="tabC">Ⓒ 미확정 값 보완</button><button class="tabbtn" data-tab="tabD">Ⓓ 워크북 입력 (그리드)</button></div>
   <div class="tabpane on" id="tabA">
     <div class="bar"><input type="file" id="fileIn" multiple accept=".dwg,.dxf,.pdf"><button id="regAll">전체 등록</button><button id="regNone" class="warn">전체 해제</button><span class="note" id="fileMsg"></span></div>
     <div class="note" style="margin-bottom:8px">이 단독 HTML 버전은 사전 추출된 도면 데이터를 사용합니다(파일 등록 시 파일명으로 매칭). DXF 브라우저 파싱은 다음 단계에서 연결.</div>
@@ -188,6 +197,15 @@ table.t tr.plate td{background:#f7fbf8}
   </div>
   <div class="tabpane" id="tabC">
     <div id="uncList"></div>
+  </div>
+  <div class="tabpane" id="tabD">
+    <div class="bar"><button id="gridAdd1" class="sm">＋ 행</button><button id="gridAdd5" class="sm">＋ 5행</button><button id="gridGen" class="pri">▶ 일괄 생성</button><button id="gridClear" class="warn sm">그리드 비우기</button>
+      <span style="width:12px"></span><label class="note">xlsx 불러오기 (ALL_PLATE 형식)</label><input type="file" id="gridXlsx" accept=".xlsx,.xlsm" style="font-size:11px"><button id="gridTpl" class="sm">템플릿 xlsx 내려받기</button><span class="note" id="gridCount"></span><span class="note" id="gridMsg"></span></div>
+    <div class="note" style="margin-bottom:6px">BOM 스크립트 엑셀(ALL_PLATE)과 같은 열 구성입니다. 부품종류형태를 고르면 필수 열이 굵게 표시되고, 행마다 ▶ 일괄 생성 시 엑셀 수식과 동일한 규칙으로 전개도형이 만들어집니다. 엑셀에서 셀 범위를 복사해 표 위에 붙여넣기(Ctrl+V)하거나 아래 입력창에 붙여넣어도 됩니다. Enter = 아래 행으로 이동(마지막 행이면 추가).</div>
+    <div id="gridBox" class="gridwrap"></div>
+    <datalist id="gridMatList"></datalist>
+    <details style="margin-top:8px"><summary class="note" style="cursor:pointer">엑셀 복사본 붙여넣기 (TSV) — 헤더 행이 있으면 자동 매핑, 없으면 그리드 열 순서</summary>
+      <textarea id="gridPasteTa" rows="4" style="width:100%;font-size:11px;font-family:monospace" placeholder="SHELL	SHELL	1-1	SA-240 304L	8	1500	1823	...	"></textarea><div class="bar"><button id="gridPasteBtn" class="sm">붙여넣기 → 그리드</button></div></details>
   </div>
 </section>
 <!-- 도형 입력 모달 -->
@@ -851,7 +869,7 @@ function renderInputTabs(){
   document.querySelectorAll('#uncList [data-fix]').forEach(b=>b.onclick=()=>{const[dw,bom]=b.dataset.fix.split('|');const it=dwgById[dw].items.find(x=>x.bom===bom);const pf=it.form||partsToForm(it);
     openShapeForm({mode:'edit',dwgId:dw,bom,prefill:{name:it.name,mat:it.mat,t:it.t,qty:it.qty,type:pf.type,v:pf.v,src:it.src,note:it.note}});});
 }
-document.querySelectorAll('.tabbtn[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabbtn[data-tab]').forEach(x=>x.classList.toggle('on',x===b));['tabA','tabB','tabC'].forEach(id=>document.getElementById(id).classList.toggle('on',id===b.dataset.tab));});
+document.querySelectorAll('.tabbtn[data-tab]').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabbtn[data-tab]').forEach(x=>x.classList.toggle('on',x===b));['tabA','tabB','tabC','tabD'].forEach(id=>document.getElementById(id).classList.toggle('on',id===b.dataset.tab));});
 document.getElementById('addManual').onclick=()=>openShapeForm({mode:'new',prefill:{type:'SHELL'}});
 document.getElementById('sfClose').onclick=closeShapeForm;document.getElementById('sfSave').onclick=saveShapeForm;
 document.getElementById('sf').querySelector('[name=type]').onchange=()=>renderTypeFields({});
@@ -865,6 +883,119 @@ function setMatField(mat){const f=document.getElementById('sf');const sel=f.quer
 
 // 도형 타입 셀렉트 채우기
 {const sel=document.getElementById('sf').querySelector('[name=type]');sel.innerHTML=Object.entries(SHAPE_TYPES).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');renderInputTabs();}
+/* =====================================================================
+   Ⓓ 워크북 입력 — 엑셀(ALL_PLATE)식 한 화면 다건 입력 그리드
+   컬럼은 BOM 스크립트 엑셀 ALL_PLATE 의 C~U 열을 따른다
+   ===================================================================== */
+const GRID_COLS=[
+ ['type','부품종류형태',90],['name','DESCRIPTION',120],['pno','PART NO',60],['mat','MATERIAL',110],['t',"TH'K",46],
+ ['H','I.D\n(SHELL/HEAD/CONE상)',70],['I','HEAD TYPE /\nSHELL폭 · NECK폭',84],['J','HEAD\nT.L',46],['K','NOZZLE\nSIZE',56],
+ ['L','PAD I.D · NECK O.D\nRING I.D · C.L컷 · CONE하',84],['M','PAD O.D · 원형직경\nRING O.D · SHELL O.D',84],
+ ['N','세로\n(높은)',56],['O','가로',56],['P','여유 · 등분수\n낮은세로 · 분할',60],['Q','원주\n여유',46],['U','수량',42],['st','상태',120]];
+const GRID_TYPES={SHELL:'SHELL',HEAD:'HEAD',CONE:'CONE',NOZZLE_NECK:'NOZZLE_NECK',NOZZLE_PAD:'NOZZLE_PAD','원형부재':'CIRCLE','사각형부재':'RECT','RING분할':'RING',SADDLE:'SADDLE','기타':'POLY'};
+const GRID_TYPE_LABEL=Object.keys(GRID_TYPES);
+let gridRows=[];
+function gridBlank(){return{type:'SHELL',name:'',pno:'',mat:'',t:'',H:'',I:'',J:'',K:'',L:'',M:'',N:'',O:'',P:'',Q:'',U:1,st:''};}
+/* 엑셀 열 → 폼 타입/값 (ALL_PLATE 컬럼 의미 그대로) */
+function gridRowToForm(r){
+  const n=k=>{const v=parseFloat(String(r[k]).replace(/[^0-9.\-]/g,''));return isNaN(v)?0:v;};
+  const type=GRID_TYPES[r.type]||r.type;
+  switch(type){
+    case 'SHELL': return{type,v:{ID:n('H'),L:n('I'),P:n('P'),Q:n('Q'),nc:1,nm:1}};
+    case 'HEAD': return{type,v:{ID:n('H'),type:(String(r.I).includes('10')?'10%':'2:1'),TL:n('J'),cut:n('L')}};
+    case 'CONE': return{type,v:{D1:n('H'),D2:n('L'),H:n('N'),bands:String(r.I||''),div:n('P')||2}};
+    case 'NOZZLE_NECK': return{type,v:{nps:String(r.K||''),OD:n('L')||(NPS_OD[String(r.K||'').replace(/\s/g,'')]||0),L:n('I'),P:n('P'),Q:n('Q')}};
+    case 'NOZZLE_PAD': return{type,v:{OD:n('M'),ID:n('L')}};
+    case 'CIRCLE': return{type,v:{D:n('M'),cut:n('L'),minor:0}};
+    case 'RECT': return{type,v:{W:n('O'),H:n('N'),H2:n('P')}};
+    case 'RING': return{type,v:{ID:n('L'),OD:n('M'),n:n('P')||1}};
+    case 'SADDLE': return{type,v:{OD:n('M'),Hc:n('N'),Wb:n('O'),pad:n('L')}};
+    default: return{type:'RECT',v:{W:n('O')||1000,H:n('N')||1000,H2:0}};
+  }
+}
+function gridRequired(type){return{SHELL:['H','I'],HEAD:['H','J'],CONE:['H','L','N'],NOZZLE_NECK:['I'],NOZZLE_PAD:['M'],원형부재:['M'],사각형부재:['N','O'],RING분할:['L','M','P'],SADDLE:['M','N','O'],기타:[]}[type]||[];}
+function gridValidate(r){
+  const miss=[];if(!r.name)miss.push('DESCRIPTION');if(!r.mat)miss.push('MATERIAL');if(!(parseFloat(r.t)>0))miss.push("TH'K");
+  for(const k of gridRequired(r.type))if(!(parseFloat(r[k])>0)&&!(r.type==='NOZZLE_NECK'&&k==='I'&&false))miss.push(k);
+  if(r.type==='NOZZLE_NECK'&&!(parseFloat(r.L)>0)&&!NPS_OD[String(r.K||'').replace(/\s/g,'')])miss.push('K 또는 L(O.D)');
+  return miss;
+}
+function renderGrid(){
+  const box=document.getElementById('gridBox');
+  let h='<table class="grid"><tr>'+GRID_COLS.map(([k,l,w])=>`<th style="min-width:${w}px">${l.replace(/\n/g,'<br>')}</th>`).join('')+'<th></th></tr>';
+  gridRows.forEach((r,i)=>{
+    h+='<tr>'+GRID_COLS.map(([k])=>{
+      if(k==='type')return`<td><select data-i="${i}" data-k="type">${GRID_TYPE_LABEL.map(t=>`<option ${r.type===t?'selected':''}>${t}</option>`).join('')}</select></td>`;
+      if(k==='st')return`<td class="st ${r.st.startsWith('✓')?'ok':(r.st?'ng':'')}">${r.st||''}</td>`;
+      if(k==='mat')return`<td><input data-i="${i}" data-k="mat" value="${r.mat||''}" list="gridMatList"></td>`;
+      const req=gridRequired(r.type).includes(k)||['name','t'].includes(k);
+      return`<td><input data-i="${i}" data-k="${k}" value="${r[k]??''}" class="${req?'req':''}"></td>`;}).join('')+`<td><button class="sm warn" data-del="${i}">×</button></td></tr>`;});
+  h+='</table>';box.innerHTML=h;
+  box.querySelectorAll('input,select').forEach(el=>{el.onchange=()=>{gridRows[+el.dataset.i][el.dataset.k]=el.value;if(el.dataset.k==='type')renderGrid();};
+    el.onkeydown=e=>{ // 엔터/화살표로 셀 이동
+      if(e.key==='Enter'||e.key==='ArrowDown'||e.key==='ArrowUp'){e.preventDefault();const tr=el.closest('tr');const idx=[...tr.children].indexOf(el.closest('td'));const nt=(e.key==='ArrowUp')?tr.previousElementSibling:tr.nextElementSibling;if(nt&&nt.children[idx]){const n=nt.children[idx].querySelector('input,select');if(n)n.focus();}else if(e.key!=='ArrowUp'){gridRows.push({...gridBlank(),type:gridRows[gridRows.length-1]?.type||'SHELL'});renderGrid();}}};});
+  box.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{gridRows.splice(+b.dataset.del,1);renderGrid();});
+  document.getElementById('gridCount').textContent=`${gridRows.length}행`;
+}
+function gridAddRows(n){for(let i=0;i<n;i++)gridRows.push(gridBlank());renderGrid();}
+/* 붙여넣기(TSV): 헤더 유무 자동 판단. 열 순서 = 그리드 순서(type,name,pno,mat,t,H,I,J,K,L,M,N,O,P,Q,U) 또는 ALL_PLATE(C~U) */
+function gridPaste(text){
+  const lines=text.replace(/\r/g,'').split('\n').filter(l=>l.trim());if(!lines.length)return 0;
+  let rows=lines.map(l=>l.split('\t'));
+  const head=rows[0].map(c=>c.trim().toUpperCase());
+  const isHeader=head.some(c=>/DESCRIPTION|MATERIAL|TH'K|부품종류|TYPE/.test(c));
+  let map=null;
+  if(isHeader){rows=rows.slice(1);
+    const keyOf=c=>{if(/HEAD TYPE|SHELL ?폭|NECK ?폭/.test(c))return'I';if(/부품종류|TYPE/.test(c))return'type';if(/DESCRIPTION|부품명|NAME/.test(c))return'name';if(/PART/.test(c))return'pno';if(/MATERIAL|재질/.test(c))return'mat';if(/TH'K|두께|^T$/.test(c))return't';
+      if(/I\.D|SHELL,\s*HEAD/.test(c)&&!/PAD|RING/.test(c))return'H';if(/T\.L/.test(c))return'J';if(/NOZZLE ?SIZE|SIZE/.test(c))return'K';
+      if(/PAD I\.D|NECK O\.D|RING I\.D|C\.L/.test(c))return'L';if(/PAD O\.D|원형직경|RING O\.D/.test(c))return'M';if(/세로/.test(c)&&!/낮은/.test(c))return'N';if(/가로/.test(c))return'O';if(/여유|등분|낮은|분할/.test(c)&&!/원주/.test(c))return'P';if(/원주/.test(c))return'Q';if(/수량|QTY/.test(c))return'U';return null;};
+    map=head.map(keyOf);}
+  let n=0;
+  for(const cells of rows){const r=gridBlank();
+    if(map){map.forEach((k,j)=>{if(k&&cells[j]!==undefined)r[k]=cells[j].trim();});}
+    else{['type','name','pno','mat','t','H','I','J','K','L','M','N','O','P','Q','U'].forEach((k,j)=>{if(cells[j]!==undefined)r[k]=cells[j].trim();});}
+    if(!GRID_TYPE_LABEL.includes(r.type)){const up=String(r.type).toUpperCase();r.type=GRID_TYPE_LABEL.find(t=>t.toUpperCase()===up)||(/PAD/.test(up)?'NOZZLE_PAD':(/NECK/.test(up)?'NOZZLE_NECK':(/RING/.test(up)?'RING분할':'사각형부재')));}
+    if(r.name||r.mat||r.H||r.M||r.N){gridRows.push(r);n++;}}
+  renderGrid();return n;
+}
+/* 일괄 생성 → 수동 등록 도면(MANUAL)에 추가 */
+function gridGenerate(){
+  let ok=0,ng=0;const d=manualDwg();
+  gridRows.forEach(r=>{const miss=gridValidate(r);if(miss.length){r.st='✗ 누락: '+miss.join(', ');ng++;return;}
+    const f=gridRowToForm(r);const t=parseFloat(r.t);const qty=Math.max(1,parseInt(r.U)||1);const parts=buildParts(f.type,f.v,t);
+    if(!parts.length){r.st='✗ 도형 생성 실패';ng++;return;}
+    parts.forEach(pt=>pt.qty=pt.qty*qty);
+    const no='G-'+String(d.items.length+1).padStart(2,'0');const src='워크북 입력 ('+r.type+') · '+Object.entries(f.v).filter(([k,v])=>v!==''&&v!==0).map(([k,v])=>k+'='+v).join(', ')+(r.pno?' · PART '+r.pno:'');
+    d.items.push({bom:no,name:r.name,mat:r.mat,t,qty,parts,src,conf:'H',note:'',form:f});
+    d.bom.push({no,name:r.name,mat:r.mat,qty,spec:'t'+t,kind:'PLATE'});
+    const b=bbox(genPoly(parts[0].kind,parts[0].p));r.st=`✓ ${no} ${parts.reduce((s,p)=>s+p.qty,0)}피스 (${b.w.toFixed(0)}×${b.h.toFixed(0)})`;ok++;});
+  if(ok)reg.add('MANUAL');dirty=true;renderGrid();renderInputTabs();updateNav();
+  document.getElementById('gridMsg').textContent=`생성 ${ok}건 · 오류 ${ng}건 — 생성된 항목은 Ⓑ 수동 등록 목록과 ②~⑥에 반영`;
+  // 생성 완료 행은 그리드에서 제거
+  gridRows=gridRows.filter(r=>!r.st.startsWith('✓'));renderGrid();
+}
+/* xlsx (SheetJS CDN 지연 로드) */
+function withXLSX(fn){if(window.XLSX)return fn();const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=fn;s.onerror=()=>alert('xlsx 라이브러리를 불러오지 못했습니다(오프라인). 엑셀에서 복사 → 붙여넣기를 이용하세요.');document.head.appendChild(s);}
+function gridImportXlsx(file){withXLSX(()=>{const rd=new FileReader();rd.onload=e=>{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+  const ws=wb.Sheets['ALL_PLATE']||wb.Sheets[wb.SheetNames[0]];const aoa=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+  // ALL_PLATE: 4행 헤더, 5행부터 데이터, 열 C=type ... U=수량 (0-based: C=2)
+  let start=0;for(let i=0;i<Math.min(10,aoa.length);i++){if(String(aoa[i][1]||'').toUpperCase()==='ITEM'||String(aoa[i][3]||'').toUpperCase().startsWith('DISCRIPTION')||String(aoa[i][3]||'').toUpperCase().startsWith('DESCRIPTION')){start=i+1;break;}}
+  let n=0;for(const row of aoa.slice(start)){const c=i=>String(row[i]??'').trim();if(!c(2)&&!c(3))continue;
+    const r={...gridBlank(),type:c(2),name:c(3),pno:c(4),mat:c(5),t:c(6),H:c(7),I:c(8),J:c(9),K:c(10),L:c(11),M:c(12),N:c(13),O:c(14),P:c(15),Q:c(16),U:c(20)||1};
+    if(!GRID_TYPE_LABEL.includes(r.type))continue;gridRows.push(r);n++;}
+  renderGrid();document.getElementById('gridMsg').textContent=`xlsx에서 ${n}행 읽음 (시트 ${ws===wb.Sheets['ALL_PLATE']?'ALL_PLATE':wb.SheetNames[0]})`;};rd.readAsArrayBuffer(file);});}
+function gridTemplate(){withXLSX(()=>{const head=GRID_COLS.filter(c=>c[0]!=='st').map(c=>c[1].replace(/\n/g,' '));
+  const ex=[['SHELL','SHELL','1-1','SA-240 304L',8,1500,1823,'','','','','','','0','0',1],['HEAD','TOP HEAD','1-2','SA-240 304L',10,1500,'2:1',27,'','','','','','','',1],['CONE','CONE','1-3','SA-240 304L',22,3700,'1800,991.7,328.8','','',52.5,'',3120.5,'',2,'',1],['NOZZLE_NECK','NOZZLE NECK (A)','1-2','SA-240 304L',8,'',160,'','16"','','','','','0','0',1],['NOZZLE_PAD','REINF. PAD (A)','1-3','SA-240 304L',10,'','','','',412.4,750,'','','','',1],['RING분할',"INSUL SUP'T RING",'5-1','SA-240 304',8,'','','','',1520,1650,'','',12,'',1],['사각형부재','BASE PLATE','2-1','A283-C',40,'','','','','','',310,310,'','',4]];
+  const ws=XLSX.utils.aoa_to_sheet([head,...ex]);const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'PLATE_INPUT');XLSX.writeFile(wb,'plate_input_template.xlsx');});}
+document.getElementById('gridAdd1').onclick=()=>gridAddRows(1);document.getElementById('gridAdd5').onclick=()=>gridAddRows(5);
+document.getElementById('gridClear').onclick=()=>{gridRows=[];renderGrid();};
+document.getElementById('gridGen').onclick=gridGenerate;
+document.getElementById('gridPasteBtn').onclick=()=>{const ta=document.getElementById('gridPasteTa');const n=gridPaste(ta.value);ta.value='';document.getElementById('gridMsg').textContent=`${n}행 붙여넣기 완료`;};
+document.getElementById('gridXlsx').onchange=e=>{if(e.target.files[0])gridImportXlsx(e.target.files[0]);e.target.value='';};
+document.getElementById('gridTpl').onclick=gridTemplate;
+document.getElementById('gridBox').addEventListener('paste',e=>{const t=(e.clipboardData||window.clipboardData).getData('text');if(t&&t.includes('\t')&&t.includes('\n')){e.preventDefault();const n=gridPaste(t);document.getElementById('gridMsg').textContent=`${n}행 붙여넣기 완료`;}});
+{const dl=document.getElementById('gridMatList');let h='';for(const g in MATDB.materials)for(const m of MATDB.materials[g])h+=`<option value="${m}">`;dl.innerHTML=h;}
+gridAddRows(3);
 
 </script>
 </body>
